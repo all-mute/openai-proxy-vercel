@@ -14,7 +14,7 @@ async def proxy(request: Request, path):
         auth_key = headers.get("authorization")
         if not auth_key:
             raise HTTPException(status_code=401, detail="Authorization key is required")
-        target_url = f"https://api.openai.com/{path}"
+        target_url = f"http://prestable.soyproxy.yandex.net/proxy/openai/{path}"
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.request(
@@ -22,7 +22,8 @@ async def proxy(request: Request, path):
                         url=target_url,
                         headers={
                             "Authorization": headers.get("authorization"),
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            "Raw-Answer": "True"
                         },
                         data=await request.body() if request.method != "GET" else None,
                 ) as response:
@@ -41,3 +42,7 @@ async def proxy(request: Request, path):
 def log(bytes_string: bytes) -> None:
     json_string = bytes_string.decode("utf-8")
     logger.info(json_string)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8001)
